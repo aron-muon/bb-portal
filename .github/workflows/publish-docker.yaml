@@ -52,7 +52,7 @@
                   "context": "frontend",
                   "file": "./frontend/Dockerfile",
                   "push": true,
-                  "tags": "ghcr.io/buildbarn/bb-portal-frontend:${{ env.TIMESTAMP }}-${{ env.SHA_SHORT }}-${{ matrix.arch }}"
+                  "tags": "ghcr.io/aron-muon/bb-portal-frontend:${{ env.TIMESTAMP }}-${{ env.SHA_SHORT }}-${{ matrix.arch }}"
                }
             }
          ],
@@ -95,7 +95,7 @@
             },
             {
                "name": "Create and Push Manifest",
-               "run": "# Base image name\nIMAGE=\"ghcr.io/buildbarn/bb-portal-frontend\"\nTAG=\"${{ env.TIMESTAMP }}-${{ env.SHA_SHORT }}\"\n\n# Create a manifest list (a \"virtual\" image) that points to both arch-specific images\ndocker buildx imagetools create -t ${IMAGE}:${TAG} \\\n  ${IMAGE}:${TAG}-amd64 \\\n  ${IMAGE}:${TAG}-arm64\n"
+               "run": "# Base image name\nIMAGE=\"ghcr.io/aron-muon/bb-portal-frontend\"\nTAG=\"${{ env.TIMESTAMP }}-${{ env.SHA_SHORT }}\"\n\n# Create a manifest list (a \"virtual\" image) that points to both arch-specific images\ndocker buildx imagetools create -t ${IMAGE}:${TAG} \\\n  ${IMAGE}:${TAG}-amd64 \\\n  ${IMAGE}:${TAG}-arm64\n"
             }
          ]
       }
