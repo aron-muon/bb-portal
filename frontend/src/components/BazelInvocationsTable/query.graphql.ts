@@ -44,6 +44,9 @@ export const BAZEL_INVOCATION_NODE_FRAGMENT = gql(/* GraphQL */ `
       connectionLastOpenAt
       timeSinceLastConnectionMillis
     }
+    sourceControl {
+      repo
+    }
     build {
       buildUUID
     }

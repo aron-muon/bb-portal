@@ -2,6 +2,7 @@ import {
   buildColumn,
   durationColumn,
   invocationIdColumn,
+  repoColumn,
   startedAtColumn,
   statusColumn,
   userColumn,
@@ -71,6 +72,7 @@ const BazelInvocationsTable: React.FC = () => {
   const tableColumns = [
     userColumn,
     invocationIdColumn,
+    repoColumn,
     startedAtColumn,
     durationColumn,
     statusColumn,
