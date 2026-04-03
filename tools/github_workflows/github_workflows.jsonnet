@@ -168,7 +168,7 @@ local lint_steps = [
               context: "frontend",
               file: "./frontend/Dockerfile",
               push: true,
-              tags: "ghcr.io/buildbarn/bb-portal-frontend:${{ env.TIMESTAMP }}-${{ env.SHA_SHORT }}-${{ matrix.arch }}",
+              tags: "ghcr.io/aron-muon/bb-portal-frontend:${{ env.TIMESTAMP }}-${{ env.SHA_SHORT }}-${{ matrix.arch }}",
             },
           },
         ],
@@ -192,7 +192,7 @@ local lint_steps = [
             name: "Create and Push Manifest",
             run: |||
               # Base image name
-              IMAGE="ghcr.io/buildbarn/bb-portal-frontend"
+              IMAGE="ghcr.io/aron-muon/bb-portal-frontend"
               TAG="${{ env.TIMESTAMP }}-${{ env.SHA_SHORT }}"
 
               # Create a manifest list (a "virtual" image) that points to both arch-specific images
@@ -225,7 +225,7 @@ local lint_steps = [
               context: "frontend/",
               file: "./frontend/Dockerfile",
               push: false,
-              tags: "ghcr.io/buildbarn/bb-portal-frontend",
+              tags: "ghcr.io/aron-muon/bb-portal-frontend",
             },
           },
         ],
