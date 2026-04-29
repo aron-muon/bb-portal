@@ -16362,6 +16362,8 @@ type InvocationFilesMutation struct {
 	clearedFields           map[string]struct{}
 	bazel_invocation        *int64
 	clearedbazel_invocation bool
+	test_result             *int64
+	clearedtest_result      bool
 	done                    bool
 	oldValue                func(context.Context) (*InvocationFiles, error)
 	predicates              []predicate.InvocationFiles
@@ -16763,6 +16765,45 @@ func (m *InvocationFilesMutation) ResetBazelInvocation() {
 	m.clearedbazel_invocation = false
 }
 
+// SetTestResultID sets the "test_result" edge to the TestResult entity by id.
+func (m *InvocationFilesMutation) SetTestResultID(id int64) {
+	m.test_result = &id
+}
+
+// ClearTestResult clears the "test_result" edge to the TestResult entity.
+func (m *InvocationFilesMutation) ClearTestResult() {
+	m.clearedtest_result = true
+}
+
+// TestResultCleared reports if the "test_result" edge to the TestResult entity was cleared.
+func (m *InvocationFilesMutation) TestResultCleared() bool {
+	return m.clearedtest_result
+}
+
+// TestResultID returns the "test_result" edge ID in the mutation.
+func (m *InvocationFilesMutation) TestResultID() (id int64, exists bool) {
+	if m.test_result != nil {
+		return *m.test_result, true
+	}
+	return
+}
+
+// TestResultIDs returns the "test_result" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TestResultID instead. It exists only for internal usage by the builders.
+func (m *InvocationFilesMutation) TestResultIDs() (ids []int64) {
+	if id := m.test_result; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTestResult resets all changes to the "test_result" edge.
+func (m *InvocationFilesMutation) ResetTestResult() {
+	m.test_result = nil
+	m.clearedtest_result = false
+}
+
 // Where appends a list predicates to the InvocationFilesMutation builder.
 func (m *InvocationFilesMutation) Where(ps ...predicate.InvocationFiles) {
 	m.predicates = append(m.predicates, ps...)
@@ -17006,9 +17047,12 @@ func (m *InvocationFilesMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *InvocationFilesMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.bazel_invocation != nil {
 		edges = append(edges, invocationfiles.EdgeBazelInvocation)
+	}
+	if m.test_result != nil {
+		edges = append(edges, invocationfiles.EdgeTestResult)
 	}
 	return edges
 }
@@ -17021,13 +17065,17 @@ func (m *InvocationFilesMutation) AddedIDs(name string) []ent.Value {
 		if id := m.bazel_invocation; id != nil {
 			return []ent.Value{*id}
 		}
+	case invocationfiles.EdgeTestResult:
+		if id := m.test_result; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *InvocationFilesMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	return edges
 }
 
@@ -17039,9 +17087,12 @@ func (m *InvocationFilesMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *InvocationFilesMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedbazel_invocation {
 		edges = append(edges, invocationfiles.EdgeBazelInvocation)
+	}
+	if m.clearedtest_result {
+		edges = append(edges, invocationfiles.EdgeTestResult)
 	}
 	return edges
 }
@@ -17052,6 +17103,8 @@ func (m *InvocationFilesMutation) EdgeCleared(name string) bool {
 	switch name {
 	case invocationfiles.EdgeBazelInvocation:
 		return m.clearedbazel_invocation
+	case invocationfiles.EdgeTestResult:
+		return m.clearedtest_result
 	}
 	return false
 }
@@ -17063,6 +17116,9 @@ func (m *InvocationFilesMutation) ClearEdge(name string) error {
 	case invocationfiles.EdgeBazelInvocation:
 		m.ClearBazelInvocation()
 		return nil
+	case invocationfiles.EdgeTestResult:
+		m.ClearTestResult()
+		return nil
 	}
 	return fmt.Errorf("unknown InvocationFiles unique edge %s", name)
 }
@@ -17073,6 +17129,9 @@ func (m *InvocationFilesMutation) ResetEdge(name string) error {
 	switch name {
 	case invocationfiles.EdgeBazelInvocation:
 		m.ResetBazelInvocation()
+		return nil
+	case invocationfiles.EdgeTestResult:
+		m.ResetTestResult()
 		return nil
 	}
 	return fmt.Errorf("unknown InvocationFiles edge %s", name)
@@ -25941,6 +26000,9 @@ type TestResultMutation struct {
 	clearedFields                  map[string]struct{}
 	test_summary                   *int64
 	clearedtest_summary            bool
+	test_action_outputs            map[int64]struct{}
+	removedtest_action_outputs     map[int64]struct{}
+	clearedtest_action_outputs     bool
 	done                           bool
 	oldValue                       func(context.Context) (*TestResult, error)
 	predicates                     []predicate.TestResult
@@ -26854,6 +26916,60 @@ func (m *TestResultMutation) ResetTestSummary() {
 	m.clearedtest_summary = false
 }
 
+// AddTestActionOutputIDs adds the "test_action_outputs" edge to the InvocationFiles entity by ids.
+func (m *TestResultMutation) AddTestActionOutputIDs(ids ...int64) {
+	if m.test_action_outputs == nil {
+		m.test_action_outputs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.test_action_outputs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTestActionOutputs clears the "test_action_outputs" edge to the InvocationFiles entity.
+func (m *TestResultMutation) ClearTestActionOutputs() {
+	m.clearedtest_action_outputs = true
+}
+
+// TestActionOutputsCleared reports if the "test_action_outputs" edge to the InvocationFiles entity was cleared.
+func (m *TestResultMutation) TestActionOutputsCleared() bool {
+	return m.clearedtest_action_outputs
+}
+
+// RemoveTestActionOutputIDs removes the "test_action_outputs" edge to the InvocationFiles entity by IDs.
+func (m *TestResultMutation) RemoveTestActionOutputIDs(ids ...int64) {
+	if m.removedtest_action_outputs == nil {
+		m.removedtest_action_outputs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.test_action_outputs, ids[i])
+		m.removedtest_action_outputs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTestActionOutputs returns the removed IDs of the "test_action_outputs" edge to the InvocationFiles entity.
+func (m *TestResultMutation) RemovedTestActionOutputsIDs() (ids []int64) {
+	for id := range m.removedtest_action_outputs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TestActionOutputsIDs returns the "test_action_outputs" edge IDs in the mutation.
+func (m *TestResultMutation) TestActionOutputsIDs() (ids []int64) {
+	for id := range m.test_action_outputs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTestActionOutputs resets all changes to the "test_action_outputs" edge.
+func (m *TestResultMutation) ResetTestActionOutputs() {
+	m.test_action_outputs = nil
+	m.clearedtest_action_outputs = false
+	m.removedtest_action_outputs = nil
+}
+
 // Where appends a list predicates to the TestResultMutation builder.
 func (m *TestResultMutation) Where(ps ...predicate.TestResult) {
 	m.predicates = append(m.predicates, ps...)
@@ -27340,9 +27456,12 @@ func (m *TestResultMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TestResultMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.test_summary != nil {
 		edges = append(edges, testresult.EdgeTestSummary)
+	}
+	if m.test_action_outputs != nil {
+		edges = append(edges, testresult.EdgeTestActionOutputs)
 	}
 	return edges
 }
@@ -27355,27 +27474,47 @@ func (m *TestResultMutation) AddedIDs(name string) []ent.Value {
 		if id := m.test_summary; id != nil {
 			return []ent.Value{*id}
 		}
+	case testresult.EdgeTestActionOutputs:
+		ids := make([]ent.Value, 0, len(m.test_action_outputs))
+		for id := range m.test_action_outputs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TestResultMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedtest_action_outputs != nil {
+		edges = append(edges, testresult.EdgeTestActionOutputs)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TestResultMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case testresult.EdgeTestActionOutputs:
+		ids := make([]ent.Value, 0, len(m.removedtest_action_outputs))
+		for id := range m.removedtest_action_outputs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TestResultMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedtest_summary {
 		edges = append(edges, testresult.EdgeTestSummary)
+	}
+	if m.clearedtest_action_outputs {
+		edges = append(edges, testresult.EdgeTestActionOutputs)
 	}
 	return edges
 }
@@ -27386,6 +27525,8 @@ func (m *TestResultMutation) EdgeCleared(name string) bool {
 	switch name {
 	case testresult.EdgeTestSummary:
 		return m.clearedtest_summary
+	case testresult.EdgeTestActionOutputs:
+		return m.clearedtest_action_outputs
 	}
 	return false
 }
@@ -27407,6 +27548,9 @@ func (m *TestResultMutation) ResetEdge(name string) error {
 	switch name {
 	case testresult.EdgeTestSummary:
 		m.ResetTestSummary()
+		return nil
+	case testresult.EdgeTestActionOutputs:
+		m.ResetTestActionOutputs()
 		return nil
 	}
 	return fmt.Errorf("unknown TestResult edge %s", name)

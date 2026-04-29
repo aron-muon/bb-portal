@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -11,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/buildbarn/bb-portal/ent/gen/ent/invocationfiles"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/predicate"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/testresult"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/testsummary"
@@ -19,14 +21,16 @@ import (
 // TestResultQuery is the builder for querying TestResult entities.
 type TestResultQuery struct {
 	config
-	ctx             *QueryContext
-	order           []testresult.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.TestResult
-	withTestSummary *TestSummaryQuery
-	withFKs         bool
-	loadTotal       []func(context.Context, []*TestResult) error
-	modifiers       []func(*sql.Selector)
+	ctx                        *QueryContext
+	order                      []testresult.OrderOption
+	inters                     []Interceptor
+	predicates                 []predicate.TestResult
+	withTestSummary            *TestSummaryQuery
+	withTestActionOutputs      *InvocationFilesQuery
+	withFKs                    bool
+	loadTotal                  []func(context.Context, []*TestResult) error
+	modifiers                  []func(*sql.Selector)
+	withNamedTestActionOutputs map[string]*InvocationFilesQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -78,6 +82,28 @@ func (trq *TestResultQuery) QueryTestSummary() *TestSummaryQuery {
 			sqlgraph.From(testresult.Table, testresult.FieldID, selector),
 			sqlgraph.To(testsummary.Table, testsummary.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, testresult.TestSummaryTable, testresult.TestSummaryColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(trq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTestActionOutputs chains the current query on the "test_action_outputs" edge.
+func (trq *TestResultQuery) QueryTestActionOutputs() *InvocationFilesQuery {
+	query := (&InvocationFilesClient{config: trq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := trq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := trq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(testresult.Table, testresult.FieldID, selector),
+			sqlgraph.To(invocationfiles.Table, invocationfiles.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, testresult.TestActionOutputsTable, testresult.TestActionOutputsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(trq.driver.Dialect(), step)
 		return fromU, nil
@@ -272,12 +298,13 @@ func (trq *TestResultQuery) Clone() *TestResultQuery {
 		return nil
 	}
 	return &TestResultQuery{
-		config:          trq.config,
-		ctx:             trq.ctx.Clone(),
-		order:           append([]testresult.OrderOption{}, trq.order...),
-		inters:          append([]Interceptor{}, trq.inters...),
-		predicates:      append([]predicate.TestResult{}, trq.predicates...),
-		withTestSummary: trq.withTestSummary.Clone(),
+		config:                trq.config,
+		ctx:                   trq.ctx.Clone(),
+		order:                 append([]testresult.OrderOption{}, trq.order...),
+		inters:                append([]Interceptor{}, trq.inters...),
+		predicates:            append([]predicate.TestResult{}, trq.predicates...),
+		withTestSummary:       trq.withTestSummary.Clone(),
+		withTestActionOutputs: trq.withTestActionOutputs.Clone(),
 		// clone intermediate query.
 		sql:       trq.sql.Clone(),
 		path:      trq.path,
@@ -293,6 +320,17 @@ func (trq *TestResultQuery) WithTestSummary(opts ...func(*TestSummaryQuery)) *Te
 		opt(query)
 	}
 	trq.withTestSummary = query
+	return trq
+}
+
+// WithTestActionOutputs tells the query-builder to eager-load the nodes that are connected to
+// the "test_action_outputs" edge. The optional arguments are used to configure the query builder of the edge.
+func (trq *TestResultQuery) WithTestActionOutputs(opts ...func(*InvocationFilesQuery)) *TestResultQuery {
+	query := (&InvocationFilesClient{config: trq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	trq.withTestActionOutputs = query
 	return trq
 }
 
@@ -375,8 +413,9 @@ func (trq *TestResultQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		nodes       = []*TestResult{}
 		withFKs     = trq.withFKs
 		_spec       = trq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			trq.withTestSummary != nil,
+			trq.withTestActionOutputs != nil,
 		}
 	)
 	if trq.withTestSummary != nil {
@@ -409,6 +448,22 @@ func (trq *TestResultQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if query := trq.withTestSummary; query != nil {
 		if err := trq.loadTestSummary(ctx, query, nodes, nil,
 			func(n *TestResult, e *TestSummary) { n.Edges.TestSummary = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := trq.withTestActionOutputs; query != nil {
+		if err := trq.loadTestActionOutputs(ctx, query, nodes,
+			func(n *TestResult) { n.Edges.TestActionOutputs = []*InvocationFiles{} },
+			func(n *TestResult, e *InvocationFiles) {
+				n.Edges.TestActionOutputs = append(n.Edges.TestActionOutputs, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range trq.withNamedTestActionOutputs {
+		if err := trq.loadTestActionOutputs(ctx, query, nodes,
+			func(n *TestResult) { n.appendNamedTestActionOutputs(name) },
+			func(n *TestResult, e *InvocationFiles) { n.appendNamedTestActionOutputs(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -449,6 +504,37 @@ func (trq *TestResultQuery) loadTestSummary(ctx context.Context, query *TestSumm
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (trq *TestResultQuery) loadTestActionOutputs(ctx context.Context, query *InvocationFilesQuery, nodes []*TestResult, init func(*TestResult), assign func(*TestResult, *InvocationFiles)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*TestResult)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.InvocationFiles(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(testresult.TestActionOutputsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.test_result_test_action_outputs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "test_result_test_action_outputs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "test_result_test_action_outputs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }
@@ -544,6 +630,20 @@ func (trq *TestResultQuery) sqlQuery(ctx context.Context) *sql.Selector {
 func (trq *TestResultQuery) Modify(modifiers ...func(s *sql.Selector)) *TestResultSelect {
 	trq.modifiers = append(trq.modifiers, modifiers...)
 	return trq.Select()
+}
+
+// WithNamedTestActionOutputs tells the query-builder to eager-load the nodes that are connected to the "test_action_outputs"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (trq *TestResultQuery) WithNamedTestActionOutputs(name string, opts ...func(*InvocationFilesQuery)) *TestResultQuery {
+	query := (&InvocationFilesClient{config: trq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if trq.withNamedTestActionOutputs == nil {
+		trq.withNamedTestActionOutputs = make(map[string]*InvocationFilesQuery)
+	}
+	trq.withNamedTestActionOutputs[name] = query
+	return trq
 }
 
 // TestResultGroupBy is the group-by builder for TestResult entities.

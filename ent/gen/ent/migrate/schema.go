@@ -608,6 +608,7 @@ var (
 		{Name: "size_bytes", Type: field.TypeInt64, Nullable: true},
 		{Name: "digest_function", Type: field.TypeString, Nullable: true},
 		{Name: "bazel_invocation_invocation_files", Type: field.TypeInt64, Nullable: true},
+		{Name: "test_result_test_action_outputs", Type: field.TypeInt64, Nullable: true},
 	}
 	// InvocationFilesTable holds the schema information for the "invocation_files" table.
 	InvocationFilesTable = &schema.Table{
@@ -621,12 +622,23 @@ var (
 				RefColumns: []*schema.Column{BazelInvocationsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
+			{
+				Symbol:     "invocation_files_test_results_test_action_outputs",
+				Columns:    []*schema.Column{InvocationFilesColumns[7]},
+				RefColumns: []*schema.Column{TestResultsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "invocationfiles_bazel_invocation_invocation_files",
 				Unique:  false,
 				Columns: []*schema.Column{InvocationFilesColumns[6]},
+			},
+			{
+				Name:    "invocationfiles_test_result_test_action_outputs",
+				Unique:  false,
+				Columns: []*schema.Column{InvocationFilesColumns[7]},
 			},
 			{
 				Name:    "invocationfiles_name_bazel_invocation_invocation_files",
@@ -1189,6 +1201,7 @@ func init() {
 	GarbageMetricsTable.ForeignKeys[0].RefTable = MemoryMetricsTable
 	IncompleteBuildLogsTable.ForeignKeys[0].RefTable = BazelInvocationsTable
 	InvocationFilesTable.ForeignKeys[0].RefTable = BazelInvocationsTable
+	InvocationFilesTable.ForeignKeys[1].RefTable = TestResultsTable
 	InvocationTargetsTable.ForeignKeys[0].RefTable = BazelInvocationsTable
 	InvocationTargetsTable.ForeignKeys[1].RefTable = ConfigurationsTable
 	InvocationTargetsTable.ForeignKeys[2].RefTable = TargetsTable

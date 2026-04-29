@@ -41,6 +41,13 @@ func (InvocationFiles) Edges() []ent.Edge {
 		edge.From("bazel_invocation", BazelInvocation.Type).
 			Ref("invocation_files").
 			Unique(),
+
+		// Optional edge back to a TestResult, when this file is a test
+		// action output (e.g. test.log, attempt_*.log) rather than an
+		// invocation-scoped log (e.g. command.profile.gz).
+		edge.From("test_result", TestResult.Type).
+			Ref("test_action_outputs").
+			Unique(),
 	}
 }
 
@@ -48,6 +55,7 @@ func (InvocationFiles) Edges() []ent.Edge {
 func (InvocationFiles) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Edges("bazel_invocation"),
+		index.Edges("test_result"),
 		// Index making the combination of a name and invocation unique.
 		index.Fields("name").
 			Edges("bazel_invocation").

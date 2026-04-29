@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/bazelinvocation"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/invocationfiles"
+	"github.com/buildbarn/bb-portal/ent/gen/ent/testresult"
 )
 
 // InvocationFiles is the model entity for the InvocationFiles schema.
@@ -31,6 +32,7 @@ type InvocationFiles struct {
 	// The values are being populated by the InvocationFilesQuery when eager-loading is set.
 	Edges                             InvocationFilesEdges `json:"edges"`
 	bazel_invocation_invocation_files *int64
+	test_result_test_action_outputs   *int64
 	selectValues                      sql.SelectValues
 }
 
@@ -38,11 +40,13 @@ type InvocationFiles struct {
 type InvocationFilesEdges struct {
 	// BazelInvocation holds the value of the bazel_invocation edge.
 	BazelInvocation *BazelInvocation `json:"bazel_invocation,omitempty"`
+	// TestResult holds the value of the test_result edge.
+	TestResult *TestResult `json:"test_result,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [2]map[string]int
 }
 
 // BazelInvocationOrErr returns the BazelInvocation value or an error if the edge
@@ -56,6 +60,17 @@ func (e InvocationFilesEdges) BazelInvocationOrErr() (*BazelInvocation, error) {
 	return nil, &NotLoadedError{edge: "bazel_invocation"}
 }
 
+// TestResultOrErr returns the TestResult value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e InvocationFilesEdges) TestResultOrErr() (*TestResult, error) {
+	if e.TestResult != nil {
+		return e.TestResult, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: testresult.Label}
+	}
+	return nil, &NotLoadedError{edge: "test_result"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*InvocationFiles) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -66,6 +81,8 @@ func (*InvocationFiles) scanValues(columns []string) ([]any, error) {
 		case invocationfiles.FieldName, invocationfiles.FieldContent, invocationfiles.FieldDigest, invocationfiles.FieldDigestFunction:
 			values[i] = new(sql.NullString)
 		case invocationfiles.ForeignKeys[0]: // bazel_invocation_invocation_files
+			values[i] = new(sql.NullInt64)
+		case invocationfiles.ForeignKeys[1]: // test_result_test_action_outputs
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -125,6 +142,13 @@ func (_if *InvocationFiles) assignValues(columns []string, values []any) error {
 				_if.bazel_invocation_invocation_files = new(int64)
 				*_if.bazel_invocation_invocation_files = int64(value.Int64)
 			}
+		case invocationfiles.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field test_result_test_action_outputs", value)
+			} else if value.Valid {
+				_if.test_result_test_action_outputs = new(int64)
+				*_if.test_result_test_action_outputs = int64(value.Int64)
+			}
 		default:
 			_if.selectValues.Set(columns[i], values[i])
 		}
@@ -141,6 +165,11 @@ func (_if *InvocationFiles) Value(name string) (ent.Value, error) {
 // QueryBazelInvocation queries the "bazel_invocation" edge of the InvocationFiles entity.
 func (_if *InvocationFiles) QueryBazelInvocation() *BazelInvocationQuery {
 	return NewInvocationFilesClient(_if.config).QueryBazelInvocation(_if)
+}
+
+// QueryTestResult queries the "test_result" edge of the InvocationFiles entity.
+func (_if *InvocationFiles) QueryTestResult() *TestResultQuery {
+	return NewInvocationFilesClient(_if.config).QueryTestResult(_if)
 }
 
 // Update returns a builder for updating this InvocationFiles.

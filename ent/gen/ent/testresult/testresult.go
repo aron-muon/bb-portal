@@ -42,6 +42,8 @@ const (
 	FieldTimingBreakdown = "timing_breakdown"
 	// EdgeTestSummary holds the string denoting the test_summary edge name in mutations.
 	EdgeTestSummary = "test_summary"
+	// EdgeTestActionOutputs holds the string denoting the test_action_outputs edge name in mutations.
+	EdgeTestActionOutputs = "test_action_outputs"
 	// Table holds the table name of the testresult in the database.
 	Table = "test_results"
 	// TestSummaryTable is the table that holds the test_summary relation/edge.
@@ -51,6 +53,13 @@ const (
 	TestSummaryInverseTable = "test_summaries"
 	// TestSummaryColumn is the table column denoting the test_summary relation/edge.
 	TestSummaryColumn = "test_summary_test_results"
+	// TestActionOutputsTable is the table that holds the test_action_outputs relation/edge.
+	TestActionOutputsTable = "invocation_files"
+	// TestActionOutputsInverseTable is the table name for the InvocationFiles entity.
+	// It exists in this package in order to avoid circular dependency with the "invocationfiles" package.
+	TestActionOutputsInverseTable = "invocation_files"
+	// TestActionOutputsColumn is the table column denoting the test_action_outputs relation/edge.
+	TestActionOutputsColumn = "test_result_test_action_outputs"
 )
 
 // Columns holds all SQL columns for testresult fields.
@@ -167,10 +176,31 @@ func ByTestSummaryField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTestSummaryStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByTestActionOutputsCount orders the results by test_action_outputs count.
+func ByTestActionOutputsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTestActionOutputsStep(), opts...)
+	}
+}
+
+// ByTestActionOutputs orders the results by test_action_outputs terms.
+func ByTestActionOutputs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTestActionOutputsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTestSummaryStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TestSummaryInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, TestSummaryTable, TestSummaryColumn),
+	)
+}
+func newTestActionOutputsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TestActionOutputsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TestActionOutputsTable, TestActionOutputsColumn),
 	)
 }

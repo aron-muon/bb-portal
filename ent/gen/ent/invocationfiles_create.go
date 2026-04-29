@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/bazelinvocation"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/invocationfiles"
+	"github.com/buildbarn/bb-portal/ent/gen/ent/testresult"
 )
 
 // InvocationFilesCreate is the builder for creating a InvocationFiles entity.
@@ -107,6 +108,25 @@ func (ifc *InvocationFilesCreate) SetNillableBazelInvocationID(id *int64) *Invoc
 // SetBazelInvocation sets the "bazel_invocation" edge to the BazelInvocation entity.
 func (ifc *InvocationFilesCreate) SetBazelInvocation(b *BazelInvocation) *InvocationFilesCreate {
 	return ifc.SetBazelInvocationID(b.ID)
+}
+
+// SetTestResultID sets the "test_result" edge to the TestResult entity by ID.
+func (ifc *InvocationFilesCreate) SetTestResultID(id int64) *InvocationFilesCreate {
+	ifc.mutation.SetTestResultID(id)
+	return ifc
+}
+
+// SetNillableTestResultID sets the "test_result" edge to the TestResult entity by ID if the given value is not nil.
+func (ifc *InvocationFilesCreate) SetNillableTestResultID(id *int64) *InvocationFilesCreate {
+	if id != nil {
+		ifc = ifc.SetTestResultID(*id)
+	}
+	return ifc
+}
+
+// SetTestResult sets the "test_result" edge to the TestResult entity.
+func (ifc *InvocationFilesCreate) SetTestResult(t *TestResult) *InvocationFilesCreate {
+	return ifc.SetTestResultID(t.ID)
 }
 
 // Mutation returns the InvocationFilesMutation object of the builder.
@@ -214,6 +234,23 @@ func (ifc *InvocationFilesCreate) createSpec() (*InvocationFiles, *sqlgraph.Crea
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.bazel_invocation_invocation_files = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ifc.mutation.TestResultIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   invocationfiles.TestResultTable,
+			Columns: []string{invocationfiles.TestResultColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(testresult.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.test_result_test_action_outputs = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

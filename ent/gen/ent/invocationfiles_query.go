@@ -14,6 +14,7 @@ import (
 	"github.com/buildbarn/bb-portal/ent/gen/ent/bazelinvocation"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/invocationfiles"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/predicate"
+	"github.com/buildbarn/bb-portal/ent/gen/ent/testresult"
 )
 
 // InvocationFilesQuery is the builder for querying InvocationFiles entities.
@@ -24,6 +25,7 @@ type InvocationFilesQuery struct {
 	inters              []Interceptor
 	predicates          []predicate.InvocationFiles
 	withBazelInvocation *BazelInvocationQuery
+	withTestResult      *TestResultQuery
 	withFKs             bool
 	loadTotal           []func(context.Context, []*InvocationFiles) error
 	modifiers           []func(*sql.Selector)
@@ -78,6 +80,28 @@ func (ifq *InvocationFilesQuery) QueryBazelInvocation() *BazelInvocationQuery {
 			sqlgraph.From(invocationfiles.Table, invocationfiles.FieldID, selector),
 			sqlgraph.To(bazelinvocation.Table, bazelinvocation.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, invocationfiles.BazelInvocationTable, invocationfiles.BazelInvocationColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ifq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTestResult chains the current query on the "test_result" edge.
+func (ifq *InvocationFilesQuery) QueryTestResult() *TestResultQuery {
+	query := (&TestResultClient{config: ifq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ifq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ifq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(invocationfiles.Table, invocationfiles.FieldID, selector),
+			sqlgraph.To(testresult.Table, testresult.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, invocationfiles.TestResultTable, invocationfiles.TestResultColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(ifq.driver.Dialect(), step)
 		return fromU, nil
@@ -278,6 +302,7 @@ func (ifq *InvocationFilesQuery) Clone() *InvocationFilesQuery {
 		inters:              append([]Interceptor{}, ifq.inters...),
 		predicates:          append([]predicate.InvocationFiles{}, ifq.predicates...),
 		withBazelInvocation: ifq.withBazelInvocation.Clone(),
+		withTestResult:      ifq.withTestResult.Clone(),
 		// clone intermediate query.
 		sql:       ifq.sql.Clone(),
 		path:      ifq.path,
@@ -293,6 +318,17 @@ func (ifq *InvocationFilesQuery) WithBazelInvocation(opts ...func(*BazelInvocati
 		opt(query)
 	}
 	ifq.withBazelInvocation = query
+	return ifq
+}
+
+// WithTestResult tells the query-builder to eager-load the nodes that are connected to
+// the "test_result" edge. The optional arguments are used to configure the query builder of the edge.
+func (ifq *InvocationFilesQuery) WithTestResult(opts ...func(*TestResultQuery)) *InvocationFilesQuery {
+	query := (&TestResultClient{config: ifq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ifq.withTestResult = query
 	return ifq
 }
 
@@ -375,11 +411,12 @@ func (ifq *InvocationFilesQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 		nodes       = []*InvocationFiles{}
 		withFKs     = ifq.withFKs
 		_spec       = ifq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			ifq.withBazelInvocation != nil,
+			ifq.withTestResult != nil,
 		}
 	)
-	if ifq.withBazelInvocation != nil {
+	if ifq.withBazelInvocation != nil || ifq.withTestResult != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -409,6 +446,12 @@ func (ifq *InvocationFilesQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	if query := ifq.withBazelInvocation; query != nil {
 		if err := ifq.loadBazelInvocation(ctx, query, nodes, nil,
 			func(n *InvocationFiles, e *BazelInvocation) { n.Edges.BazelInvocation = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := ifq.withTestResult; query != nil {
+		if err := ifq.loadTestResult(ctx, query, nodes, nil,
+			func(n *InvocationFiles, e *TestResult) { n.Edges.TestResult = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -445,6 +488,38 @@ func (ifq *InvocationFilesQuery) loadBazelInvocation(ctx context.Context, query 
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "bazel_invocation_invocation_files" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (ifq *InvocationFilesQuery) loadTestResult(ctx context.Context, query *TestResultQuery, nodes []*InvocationFiles, init func(*InvocationFiles), assign func(*InvocationFiles, *TestResult)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*InvocationFiles)
+	for i := range nodes {
+		if nodes[i].test_result_test_action_outputs == nil {
+			continue
+		}
+		fk := *nodes[i].test_result_test_action_outputs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(testresult.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "test_result_test_action_outputs" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
