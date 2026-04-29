@@ -14,6 +14,7 @@ import { CursorTable, getNewPaginationVariables } from "../CursorTable";
 import type { PaginationVariables } from "../CursorTable/types";
 import PortalAlert from "../PortalAlert";
 import { columns, defaultSorting, type TestTabRowType } from "./columns";
+import ExpandedRow from "./ExpandedRow";
 import { GET_TESTS_FOR_INVOCATION } from "./graphql";
 
 interface Props {
@@ -146,6 +147,18 @@ export const TestTab: React.FC<Props> = ({ invocationId }) => {
       loading={loading}
       rowKey={"id"}
       showSorterTooltip={{ target: "sorter-icon" }}
+      expandable={{
+        expandedRowRender: (record) => (
+          <ExpandedRow
+            testResults={record.testResults ?? []}
+            instanceName={record.invocationTarget.target.instanceName.name}
+          />
+        ),
+        rowExpandable: (record) =>
+          (record.testResults ?? []).some(
+            (tr) => (tr.actionOutputs ?? []).length > 0,
+          ),
+      }}
       pagination={{
         position: "bottom",
         justify: "end",
