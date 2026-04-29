@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -65,6 +66,12 @@ func (TestResult) Edges() []ent.Edge {
 			Ref("test_results").
 			Required().
 			Unique(),
+
+		// Files produced by this test attempt (e.g. test.log, test.xml,
+		// per-attempt logs). Stored in the invocation_files table so
+		// they can be served by the existing /api/v1/servefile endpoint.
+		edge.To("test_action_outputs", InvocationFiles.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }
 

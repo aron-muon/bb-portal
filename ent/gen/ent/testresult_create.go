@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/buildbarn/bb-portal/ent/gen/ent/invocationfiles"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/testresult"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/testsummary"
 )
@@ -196,6 +197,21 @@ func (trc *TestResultCreate) SetTestSummary(t *TestSummary) *TestResultCreate {
 	return trc.SetTestSummaryID(t.ID)
 }
 
+// AddTestActionOutputIDs adds the "test_action_outputs" edge to the InvocationFiles entity by IDs.
+func (trc *TestResultCreate) AddTestActionOutputIDs(ids ...int64) *TestResultCreate {
+	trc.mutation.AddTestActionOutputIDs(ids...)
+	return trc
+}
+
+// AddTestActionOutputs adds the "test_action_outputs" edges to the InvocationFiles entity.
+func (trc *TestResultCreate) AddTestActionOutputs(i ...*InvocationFiles) *TestResultCreate {
+	ids := make([]int64, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return trc.AddTestActionOutputIDs(ids...)
+}
+
 // Mutation returns the TestResultMutation object of the builder.
 func (trc *TestResultCreate) Mutation() *TestResultMutation {
 	return trc.mutation
@@ -346,6 +362,22 @@ func (trc *TestResultCreate) createSpec() (*TestResult, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.test_summary_test_results = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := trc.mutation.TestActionOutputsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   testresult.TestActionOutputsTable,
+			Columns: []string{testresult.TestActionOutputsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invocationfiles.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

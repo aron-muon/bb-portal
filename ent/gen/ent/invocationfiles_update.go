@@ -13,6 +13,7 @@ import (
 	"github.com/buildbarn/bb-portal/ent/gen/ent/bazelinvocation"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/invocationfiles"
 	"github.com/buildbarn/bb-portal/ent/gen/ent/predicate"
+	"github.com/buildbarn/bb-portal/ent/gen/ent/testresult"
 )
 
 // InvocationFilesUpdate is the builder for updating InvocationFiles entities.
@@ -149,6 +150,25 @@ func (ifu *InvocationFilesUpdate) SetBazelInvocation(b *BazelInvocation) *Invoca
 	return ifu.SetBazelInvocationID(b.ID)
 }
 
+// SetTestResultID sets the "test_result" edge to the TestResult entity by ID.
+func (ifu *InvocationFilesUpdate) SetTestResultID(id int64) *InvocationFilesUpdate {
+	ifu.mutation.SetTestResultID(id)
+	return ifu
+}
+
+// SetNillableTestResultID sets the "test_result" edge to the TestResult entity by ID if the given value is not nil.
+func (ifu *InvocationFilesUpdate) SetNillableTestResultID(id *int64) *InvocationFilesUpdate {
+	if id != nil {
+		ifu = ifu.SetTestResultID(*id)
+	}
+	return ifu
+}
+
+// SetTestResult sets the "test_result" edge to the TestResult entity.
+func (ifu *InvocationFilesUpdate) SetTestResult(t *TestResult) *InvocationFilesUpdate {
+	return ifu.SetTestResultID(t.ID)
+}
+
 // Mutation returns the InvocationFilesMutation object of the builder.
 func (ifu *InvocationFilesUpdate) Mutation() *InvocationFilesMutation {
 	return ifu.mutation
@@ -157,6 +177,12 @@ func (ifu *InvocationFilesUpdate) Mutation() *InvocationFilesMutation {
 // ClearBazelInvocation clears the "bazel_invocation" edge to the BazelInvocation entity.
 func (ifu *InvocationFilesUpdate) ClearBazelInvocation() *InvocationFilesUpdate {
 	ifu.mutation.ClearBazelInvocation()
+	return ifu
+}
+
+// ClearTestResult clears the "test_result" edge to the TestResult entity.
+func (ifu *InvocationFilesUpdate) ClearTestResult() *InvocationFilesUpdate {
+	ifu.mutation.ClearTestResult()
 	return ifu
 }
 
@@ -254,6 +280,35 @@ func (ifu *InvocationFilesUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(bazelinvocation.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ifu.mutation.TestResultCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   invocationfiles.TestResultTable,
+			Columns: []string{invocationfiles.TestResultColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(testresult.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ifu.mutation.TestResultIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   invocationfiles.TestResultTable,
+			Columns: []string{invocationfiles.TestResultColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(testresult.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -403,6 +458,25 @@ func (ifuo *InvocationFilesUpdateOne) SetBazelInvocation(b *BazelInvocation) *In
 	return ifuo.SetBazelInvocationID(b.ID)
 }
 
+// SetTestResultID sets the "test_result" edge to the TestResult entity by ID.
+func (ifuo *InvocationFilesUpdateOne) SetTestResultID(id int64) *InvocationFilesUpdateOne {
+	ifuo.mutation.SetTestResultID(id)
+	return ifuo
+}
+
+// SetNillableTestResultID sets the "test_result" edge to the TestResult entity by ID if the given value is not nil.
+func (ifuo *InvocationFilesUpdateOne) SetNillableTestResultID(id *int64) *InvocationFilesUpdateOne {
+	if id != nil {
+		ifuo = ifuo.SetTestResultID(*id)
+	}
+	return ifuo
+}
+
+// SetTestResult sets the "test_result" edge to the TestResult entity.
+func (ifuo *InvocationFilesUpdateOne) SetTestResult(t *TestResult) *InvocationFilesUpdateOne {
+	return ifuo.SetTestResultID(t.ID)
+}
+
 // Mutation returns the InvocationFilesMutation object of the builder.
 func (ifuo *InvocationFilesUpdateOne) Mutation() *InvocationFilesMutation {
 	return ifuo.mutation
@@ -411,6 +485,12 @@ func (ifuo *InvocationFilesUpdateOne) Mutation() *InvocationFilesMutation {
 // ClearBazelInvocation clears the "bazel_invocation" edge to the BazelInvocation entity.
 func (ifuo *InvocationFilesUpdateOne) ClearBazelInvocation() *InvocationFilesUpdateOne {
 	ifuo.mutation.ClearBazelInvocation()
+	return ifuo
+}
+
+// ClearTestResult clears the "test_result" edge to the TestResult entity.
+func (ifuo *InvocationFilesUpdateOne) ClearTestResult() *InvocationFilesUpdateOne {
+	ifuo.mutation.ClearTestResult()
 	return ifuo
 }
 
@@ -538,6 +618,35 @@ func (ifuo *InvocationFilesUpdateOne) sqlSave(ctx context.Context) (_node *Invoc
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(bazelinvocation.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ifuo.mutation.TestResultCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   invocationfiles.TestResultTable,
+			Columns: []string{invocationfiles.TestResultColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(testresult.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ifuo.mutation.TestResultIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   invocationfiles.TestResultTable,
+			Columns: []string{invocationfiles.TestResultColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(testresult.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

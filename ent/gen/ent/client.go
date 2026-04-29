@@ -3342,6 +3342,22 @@ func (c *InvocationFilesClient) QueryBazelInvocation(_if *InvocationFiles) *Baze
 	return query
 }
 
+// QueryTestResult queries the test_result edge of a InvocationFiles.
+func (c *InvocationFilesClient) QueryTestResult(_if *InvocationFiles) *TestResultQuery {
+	query := (&TestResultClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _if.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(invocationfiles.Table, invocationfiles.FieldID, id),
+			sqlgraph.To(testresult.Table, testresult.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, invocationfiles.TestResultTable, invocationfiles.TestResultColumn),
+		)
+		fromV = sqlgraph.Neighbors(_if.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *InvocationFilesClient) Hooks() []Hook {
 	return c.hooks.InvocationFiles
@@ -5364,6 +5380,22 @@ func (c *TestResultClient) QueryTestSummary(tr *TestResult) *TestSummaryQuery {
 			sqlgraph.From(testresult.Table, testresult.FieldID, id),
 			sqlgraph.To(testsummary.Table, testsummary.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, testresult.TestSummaryTable, testresult.TestSummaryColumn),
+		)
+		fromV = sqlgraph.Neighbors(tr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTestActionOutputs queries the test_action_outputs edge of a TestResult.
+func (c *TestResultClient) QueryTestActionOutputs(tr *TestResult) *InvocationFilesQuery {
+	query := (&InvocationFilesClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := tr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(testresult.Table, testresult.FieldID, id),
+			sqlgraph.To(invocationfiles.Table, invocationfiles.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, testresult.TestActionOutputsTable, testresult.TestActionOutputsColumn),
 		)
 		fromV = sqlgraph.Neighbors(tr.driver.Dialect(), step)
 		return fromV, nil

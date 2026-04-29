@@ -768,6 +768,29 @@ func HasTestSummaryWith(preds ...predicate.TestSummary) predicate.TestResult {
 	})
 }
 
+// HasTestActionOutputs applies the HasEdge predicate on the "test_action_outputs" edge.
+func HasTestActionOutputs() predicate.TestResult {
+	return predicate.TestResult(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TestActionOutputsTable, TestActionOutputsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTestActionOutputsWith applies the HasEdge predicate on the "test_action_outputs" edge with a given conditions (other predicates).
+func HasTestActionOutputsWith(preds ...predicate.InvocationFiles) predicate.TestResult {
+	return predicate.TestResult(func(s *sql.Selector) {
+		step := newTestActionOutputsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.TestResult) predicate.TestResult {
 	return predicate.TestResult(sql.AndPredicates(predicates...))

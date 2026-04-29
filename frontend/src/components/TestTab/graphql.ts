@@ -29,8 +29,19 @@ export const GET_TESTS_FOR_INVOCATION = gql(/* GraphQl */ `
           overallStatus
           totalRunDurationInMs
           testResults {
+            id
+            run
+            shard
+            attempt
+            status
             cachedLocally
             cachedRemotely
+            actionOutputs {
+              name
+              digest
+              sizeInBytes
+              digestFunction
+            }
           }
           invocationTarget {
             target {

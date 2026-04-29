@@ -464,7 +464,15 @@ type ComplexityRoot struct {
 		TargetsLoaded                        func(childComplexity int) int
 	}
 
+	TestActionOutput struct {
+		Digest         func(childComplexity int) int
+		DigestFunction func(childComplexity int) int
+		Name           func(childComplexity int) int
+		SizeInBytes    func(childComplexity int) int
+	}
+
 	TestResult struct {
+		ActionOutputs           func(childComplexity int) int
 		Attempt                 func(childComplexity int) int
 		CachedLocally           func(childComplexity int) int
 		CachedRemotely          func(childComplexity int) int
@@ -619,6 +627,8 @@ type TargetMetricsResolver interface {
 }
 type TestResultResolver interface {
 	ID(ctx context.Context, obj *ent.TestResult) (string, error)
+
+	ActionOutputs(ctx context.Context, obj *ent.TestResult) ([]*model.TestActionOutput, error)
 }
 type TestSummaryResolver interface {
 	ID(ctx context.Context, obj *ent.TestSummary) (string, error)
@@ -2754,6 +2764,41 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.TargetMetrics.TargetsLoaded(childComplexity), true
+
+	case "TestActionOutput.digest":
+		if e.complexity.TestActionOutput.Digest == nil {
+			break
+		}
+
+		return e.complexity.TestActionOutput.Digest(childComplexity), true
+
+	case "TestActionOutput.digestFunction":
+		if e.complexity.TestActionOutput.DigestFunction == nil {
+			break
+		}
+
+		return e.complexity.TestActionOutput.DigestFunction(childComplexity), true
+
+	case "TestActionOutput.name":
+		if e.complexity.TestActionOutput.Name == nil {
+			break
+		}
+
+		return e.complexity.TestActionOutput.Name(childComplexity), true
+
+	case "TestActionOutput.sizeInBytes":
+		if e.complexity.TestActionOutput.SizeInBytes == nil {
+			break
+		}
+
+		return e.complexity.TestActionOutput.SizeInBytes(childComplexity), true
+
+	case "TestResult.actionOutputs":
+		if e.complexity.TestResult.ActionOutputs == nil {
+			break
+		}
+
+		return e.complexity.TestResult.ActionOutputs(childComplexity), true
 
 	case "TestResult.attempt":
 		if e.complexity.TestResult.Attempt == nil {
@@ -17245,6 +17290,182 @@ func (ec *executionContext) fieldContext_TargetMetrics_metrics(_ context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _TestActionOutput_name(ctx context.Context, field graphql.CollectedField, obj *model.TestActionOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TestActionOutput_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TestActionOutput_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TestActionOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TestActionOutput_digest(ctx context.Context, field graphql.CollectedField, obj *model.TestActionOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TestActionOutput_digest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Digest, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TestActionOutput_digest(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TestActionOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TestActionOutput_sizeInBytes(ctx context.Context, field graphql.CollectedField, obj *model.TestActionOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TestActionOutput_sizeInBytes(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SizeInBytes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TestActionOutput_sizeInBytes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TestActionOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TestActionOutput_digestFunction(ctx context.Context, field graphql.CollectedField, obj *model.TestActionOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TestActionOutput_digestFunction(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DigestFunction, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TestActionOutput_digestFunction(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TestActionOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TestResult_id(ctx context.Context, field graphql.CollectedField, obj *ent.TestResult) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TestResult_id(ctx, field)
 	if err != nil {
@@ -17942,6 +18163,60 @@ func (ec *executionContext) fieldContext_TestResult_testSummary(_ context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _TestResult_actionOutputs(ctx context.Context, field graphql.CollectedField, obj *ent.TestResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TestResult_actionOutputs(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TestResult().ActionOutputs(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.TestActionOutput)
+	fc.Result = res
+	return ec.marshalNTestActionOutput2ᚕᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋinternalᚋgraphqlᚋmodelᚐTestActionOutputᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TestResult_actionOutputs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TestResult",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_TestActionOutput_name(ctx, field)
+			case "digest":
+				return ec.fieldContext_TestActionOutput_digest(ctx, field)
+			case "sizeInBytes":
+				return ec.fieldContext_TestActionOutput_sizeInBytes(ctx, field)
+			case "digestFunction":
+				return ec.fieldContext_TestActionOutput_digestFunction(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TestActionOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TestSummary_id(ctx context.Context, field graphql.CollectedField, obj *ent.TestSummary) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TestSummary_id(ctx, field)
 	if err != nil {
@@ -18493,6 +18768,8 @@ func (ec *executionContext) fieldContext_TestSummary_testResults(_ context.Conte
 				return ec.fieldContext_TestResult_timingBreakdown(ctx, field)
 			case "testSummary":
 				return ec.fieldContext_TestResult_testSummary(ctx, field)
+			case "actionOutputs":
+				return ec.fieldContext_TestResult_actionOutputs(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TestResult", field.Name)
 		},
@@ -41460,6 +41737,60 @@ func (ec *executionContext) _TargetMetrics(ctx context.Context, sel ast.Selectio
 	return out
 }
 
+var testActionOutputImplementors = []string{"TestActionOutput"}
+
+func (ec *executionContext) _TestActionOutput(ctx context.Context, sel ast.SelectionSet, obj *model.TestActionOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, testActionOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TestActionOutput")
+		case "name":
+			out.Values[i] = ec._TestActionOutput_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "digest":
+			out.Values[i] = ec._TestActionOutput_digest(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sizeInBytes":
+			out.Values[i] = ec._TestActionOutput_sizeInBytes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "digestFunction":
+			out.Values[i] = ec._TestActionOutput_digestFunction(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var testResultImplementors = []string{"TestResult", "Node"}
 
 func (ec *executionContext) _TestResult(ctx context.Context, sel ast.SelectionSet, obj *ent.TestResult) graphql.Marshaler {
@@ -41554,6 +41885,42 @@ func (ec *executionContext) _TestResult(ctx context.Context, sel ast.SelectionSe
 					}
 				}()
 				res = ec._TestResult_testSummary(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "actionOutputs":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TestResult_actionOutputs(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -42905,6 +43272,60 @@ func (ec *executionContext) unmarshalNTargetMetricsWhereInput2ᚖgithubᚗcomᚋ
 func (ec *executionContext) unmarshalNTargetWhereInput2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐTargetWhereInput(ctx context.Context, v any) (*ent.TargetWhereInput, error) {
 	res, err := ec.unmarshalInputTargetWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTestActionOutput2ᚕᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋinternalᚋgraphqlᚋmodelᚐTestActionOutputᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.TestActionOutput) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTestActionOutput2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋinternalᚋgraphqlᚋmodelᚐTestActionOutput(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTestActionOutput2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋinternalᚋgraphqlᚋmodelᚐTestActionOutput(ctx context.Context, sel ast.SelectionSet, v *model.TestActionOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._TestActionOutput(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNTestResult2ᚖgithubᚗcomᚋbuildbarnᚋbbᚑportalᚋentᚋgenᚋentᚐTestResult(ctx context.Context, sel ast.SelectionSet, v *ent.TestResult) graphql.Marshaler {

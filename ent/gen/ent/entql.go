@@ -1117,6 +1117,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"BazelInvocation",
 	)
 	graph.MustAddE(
+		"test_result",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   invocationfiles.TestResultTable,
+			Columns: []string{invocationfiles.TestResultColumn},
+			Bidi:    false,
+		},
+		"InvocationFiles",
+		"TestResult",
+	)
+	graph.MustAddE(
 		"bazel_invocation",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -1439,6 +1451,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"TestResult",
 		"TestSummary",
+	)
+	graph.MustAddE(
+		"test_action_outputs",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   testresult.TestActionOutputsTable,
+			Columns: []string{testresult.TestActionOutputsColumn},
+			Bidi:    false,
+		},
+		"TestResult",
+		"InvocationFiles",
 	)
 	graph.MustAddE(
 		"invocation_target",
@@ -3295,6 +3319,20 @@ func (f *InvocationFilesFilter) WhereHasBazelInvocationWith(preds ...predicate.B
 	})))
 }
 
+// WhereHasTestResult applies a predicate to check if query has an edge test_result.
+func (f *InvocationFilesFilter) WhereHasTestResult() {
+	f.Where(entql.HasEdge("test_result"))
+}
+
+// WhereHasTestResultWith applies a predicate to check if query has an edge test_result with a given conditions (other predicates).
+func (f *InvocationFilesFilter) WhereHasTestResultWith(preds ...predicate.TestResult) {
+	f.Where(entql.HasEdgeWith("test_result", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (itq *InvocationTargetQuery) addPredicate(pred func(s *sql.Selector)) {
 	itq.predicates = append(itq.predicates, pred)
@@ -4457,6 +4495,20 @@ func (f *TestResultFilter) WhereHasTestSummary() {
 // WhereHasTestSummaryWith applies a predicate to check if query has an edge test_summary with a given conditions (other predicates).
 func (f *TestResultFilter) WhereHasTestSummaryWith(preds ...predicate.TestSummary) {
 	f.Where(entql.HasEdgeWith("test_summary", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTestActionOutputs applies a predicate to check if query has an edge test_action_outputs.
+func (f *TestResultFilter) WhereHasTestActionOutputs() {
+	f.Where(entql.HasEdge("test_action_outputs"))
+}
+
+// WhereHasTestActionOutputsWith applies a predicate to check if query has an edge test_action_outputs with a given conditions (other predicates).
+func (f *TestResultFilter) WhereHasTestActionOutputsWith(preds ...predicate.InvocationFiles) {
+	f.Where(entql.HasEdgeWith("test_action_outputs", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

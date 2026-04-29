@@ -24,6 +24,8 @@ const (
 	FieldDigestFunction = "digest_function"
 	// EdgeBazelInvocation holds the string denoting the bazel_invocation edge name in mutations.
 	EdgeBazelInvocation = "bazel_invocation"
+	// EdgeTestResult holds the string denoting the test_result edge name in mutations.
+	EdgeTestResult = "test_result"
 	// Table holds the table name of the invocationfiles in the database.
 	Table = "invocation_files"
 	// BazelInvocationTable is the table that holds the bazel_invocation relation/edge.
@@ -33,6 +35,13 @@ const (
 	BazelInvocationInverseTable = "bazel_invocations"
 	// BazelInvocationColumn is the table column denoting the bazel_invocation relation/edge.
 	BazelInvocationColumn = "bazel_invocation_invocation_files"
+	// TestResultTable is the table that holds the test_result relation/edge.
+	TestResultTable = "invocation_files"
+	// TestResultInverseTable is the table name for the TestResult entity.
+	// It exists in this package in order to avoid circular dependency with the "testresult" package.
+	TestResultInverseTable = "test_results"
+	// TestResultColumn is the table column denoting the test_result relation/edge.
+	TestResultColumn = "test_result_test_action_outputs"
 )
 
 // Columns holds all SQL columns for invocationfiles fields.
@@ -49,6 +58,7 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"bazel_invocation_invocation_files",
+	"test_result_test_action_outputs",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -105,10 +115,24 @@ func ByBazelInvocationField(field string, opts ...sql.OrderTermOption) OrderOpti
 		sqlgraph.OrderByNeighborTerms(s, newBazelInvocationStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByTestResultField orders the results by test_result field.
+func ByTestResultField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTestResultStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newBazelInvocationStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(BazelInvocationInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, BazelInvocationTable, BazelInvocationColumn),
+	)
+}
+func newTestResultStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TestResultInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, TestResultTable, TestResultColumn),
 	)
 }
