@@ -48,3 +48,14 @@ extend type ConnectionMetadata {
 extend type Target {
   invocationTargetsTotalDurationMillis: Int! @goField(forceResolver: true)
 }
+
+type TestActionOutput {
+  name: String!
+  digest: String!
+  sizeInBytes: Int!
+  digestFunction: String!
+}
+
+extend type TestResult {
+  actionOutputs: [TestActionOutput!]!
+}

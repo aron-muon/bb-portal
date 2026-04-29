@@ -71,6 +71,10 @@ func (r *buildEventRecorder) saveTestResultBatch(ctx context.Context, batch []Bu
 		return util.StatusWrap(err, "Failed to bulk insert test results")
 	}
 
+	if err := saveTestActionOutputs(ctx, r.InvocationDbID, tx, filteredBatch); err != nil {
+		return util.StatusWrap(err, "Failed to save test action outputs")
+	}
+
 	if err := r.saveHandledEventsForBatch(ctx, batch, tx); err != nil {
 		return util.StatusWrap(err, "Failed to bulk insert event metadata")
 	}

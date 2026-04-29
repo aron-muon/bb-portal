@@ -102,7 +102,7 @@ func (r *queryResolver) GetBuild(ctx context.Context, buildUUID uuid.UUID) (*ent
 }
 
 // GetTarget is the resolver for the getTarget field.
-func (r *queryResolver) GetTarget(ctx context.Context, instanceName, label, aspect, targetKind string) (*ent.Target, error) {
+func (r *queryResolver) GetTarget(ctx context.Context, instanceName string, label string, aspect string, targetKind string) (*ent.Target, error) {
 	// CollectFields here is used to avoid the N+1 query problem. Ent shouldn't
 	// need it, but somehow it does.
 	query, err := r.client.Target.Query().Where(
@@ -137,4 +137,25 @@ func (r *targetResolver) InvocationTargetsTotalDurationMillis(ctx context.Contex
 		Where(invocationtarget.DurationInMsNotNil()).
 		Aggregate(ent.Sum(invocationtarget.FieldDurationInMs)).
 		Int(ctx)
+}
+
+// ActionOutputs is the resolver for the actionOutputs field.
+func (r *testResultResolver) ActionOutputs(ctx context.Context, obj *ent.TestResult) ([]*model.TestActionOutput, error) {
+	files, err := obj.QueryTestActionOutputs().All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*model.TestActionOutput, 0, len(files))
+	for _, f := range files {
+		if f.Digest == "" || f.SizeBytes == 0 || f.DigestFunction == "" {
+			continue
+		}
+		out = append(out, &model.TestActionOutput{
+			Name:           f.Name,
+			Digest:         f.Digest,
+			SizeInBytes:    int(f.SizeBytes),
+			DigestFunction: f.DigestFunction,
+		})
+	}
+	return out, nil
 }

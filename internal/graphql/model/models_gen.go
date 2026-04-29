@@ -21,6 +21,13 @@ type Profile struct {
 	DigestFunction string `json:"digestFunction"`
 }
 
+type TestActionOutput struct {
+	Name           string `json:"name"`
+	Digest         string `json:"digest"`
+	SizeInBytes    int    `json:"sizeInBytes"`
+	DigestFunction string `json:"digestFunction"`
+}
+
 type User struct {
 	ID    string `json:"id"`
 	Email string `json:"Email"`
